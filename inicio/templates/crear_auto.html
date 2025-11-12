@@ -1,1 +1,26 @@
-SE CREO UN AUTO {{objeto_guardado.marca}} {{objeto_guardado.modelo}}
+{% extends "base.html" %}
+{% block title_head %}Crear Auto{% endblock title_head %}
+{% block contenido %}
+
+    <form action={% url "crear" %} method='POST'>
+        {% csrf_token %}
+        {{formulario}}
+        {% comment %} <label for="marca">
+            Marca:
+            <input type="text" name="marca"> 
+        </label>
+        <label for="modelo">
+            Modelo:
+            <input type="text" name="modelo">
+        </label> {% endcomment %}
+
+
+        {% comment %} <button>Crear</button> {% endcomment %}
+        
+        <input type="submit" value="Crear" >
+    
+    </form>
+
+
+{% endblock contenido %}
+

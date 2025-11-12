@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from inicio.models import Auto
+from inicio.forms import CrearAuto, BuscarAuto
+from django.views.generic.edit import UpdateView, DeleteView
+from django.urls import reverse_lazy
 
 
 def inicio(request):
@@ -12,16 +15,46 @@ def otra(request):
     return render(request, 'otra.html')
 
 
-def crear_auto(request, marca, modelo):
+def crear_auto(request):
+    if request.method == 'POST':
+        formulario = CrearAuto(request.POST)
+        if formulario.is_valid():
+            info = formulario.cleaned_data
+        
+            auto = Auto(marca=info.get('marca'), modelo=info.get('modelo'))
+            auto.save()
+            
+            return redirect('listado')
+    else:
+        formulario = CrearAuto()
     
-    auto = Auto(marca=marca, modelo=modelo)
-    auto.save()
-    
-    return render(request, 'crear_auto.html', {'objeto_guardado': auto})
+    return render(request, 'crear_auto.html', {'formulario': formulario})
 
 
 def listar_autos(request):
     
-    autos = Auto.objects.all()
+    formulario = BuscarAuto(request.GET)
+    if formulario.is_valid():
+        modelo_a_buscar = formulario.cleaned_data.get('modelo')
+        listado_de_autos = Auto.objects.filter(modelo__icontains=modelo_a_buscar)
     
-    return render(request, 'listar_autos.html', {'listado_de_autos': autos})
+    return render(request, 'listar_autos.html', {'listado_de_autos': listado_de_autos, 'formulario': formulario})
+
+def ver_auto(request, auto_id):
+    
+    auto = Auto.objects.get(id=auto_id)
+    
+    return render(request, 'ver_auto.html', {'auto': auto})
+
+
+class ActualizarAuto(UpdateView):
+    model = Auto
+    template_name = 'actualizar_auto.html'
+    # fields = ['marca', 'modelo']
+    fields = '__all__'
+    success_url = reverse_lazy('listado')
+    
+class EliminarAuto(DeleteView):
+    model = Auto
+    template_name = 'eliminar_auto.html'
+    success_url = reverse_lazy('listado')
